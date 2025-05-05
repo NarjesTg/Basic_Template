@@ -3,16 +3,12 @@ version: 0.2
 env:
   variables:
     #USER_ID: "19"
-    SITE_NAME: "Testinglastonemoretime"
-    TARGET_IP: "52.21.50.243"
+    DOCKERHUB_USERNAME: "jesstg"
+    DOCKERHUB_PASSWORD: "Jess2001@@"
+
     SSH_USER: "ec2-user"  # Changez en "ubuntu" si AMI Ubuntu
-    SITE_SECRET_NAME : "sites/19/Testinglastonemoretime"
-    DOCKER_IMAGE : "jesstg/drupal-test:latest"
-    DB_NAME : "db19Testinglastonemoretime"
-    DB_HOST=: "ls-69fe942e9ee0570ad958148ce1f1fbf37e749a2f.c43wcgu6gelw.us-east-1.rds.amazonaws.com"
-    DB_PORT : "3306"
-    DB_USER : "user"
-    DB_PASSWORD: 'xnV&waZdU-1H#_sC'
+    #DOCKER_IMAGE : "jesstg/drupal-app:latest"
+
 
    
     
@@ -27,6 +23,7 @@ phases:
 
   pre_build:
     commands:
+      - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
        # Configuration du site
       - |
@@ -83,6 +80,10 @@ phases:
 
   build:
     commands:
+
+      - docker build -t jesstg/drupal-app-test:latest .  # Nom unifié
+      - docker push jesstg/drupal-app-test:latest
+      
       # Extract variables from secret
       - echo "✅ Loading variables from site-config.json"
       - export DB_NAME=$(jq -r '.db_name // ""' site-config.json)
@@ -135,7 +136,7 @@ phases:
           export DB_NAME='$DB_NAME'
           export DB_USER='$DB_USER'
           export DB_PASSWORD='$DB_PASSWORD'
-          export DOCKER_IMAGE='$DOCKER_IMAGE'
+          #export DOCKER_IMAGE='$DOCKER_IMAGE'
           export AWS_REGION='$AWS_REGION'
 
           # Debug variables in SSH session
@@ -189,7 +190,7 @@ phases:
 
           # Pull Docker image
           echo "🐳 Pulling Docker image: \$DOCKER_IMAGE"
-          docker pull "\$DOCKER_IMAGE" || {
+          docker pull "jesstg/drupal-app:latest" || {
             echo "❌ Failed to pull Docker image"
             exit 1
           }
@@ -210,7 +211,7 @@ phases:
             -e DB_USER="\$DB_USER" \
             -e DB_PASSWORD="\$DB_PASSWORD" \
             -e AWS_REGION="\$AWS_REGION" \
-            "jesstg/drupal-test:latest" || {
+            "jesstg/drupal-app-test:latest" || {
               echo "❌ Failed to start Docker container"
               docker logs drupal
               exit 1
@@ -241,6 +242,8 @@ phases:
           docker exec drupal chmod -R 775 /var/www/html/web/config
           docker exec drupal chown -R www-data:www-data /var/www/html/web/sites/default/files
           docker exec drupal chmod -R 775 /var/www/html/web/sites/default/files
+
+          
 
           # Configure Drupal settings
           echo "🔧 Configuring Drupal settings"
