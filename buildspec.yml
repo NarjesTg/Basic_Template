@@ -26,7 +26,6 @@ phases:
       - echo "📦 Logging in to ECR at $ECR_BASE_URL"
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_BASE_URL
 
-      - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
        # Configuration du site
       - |
