@@ -82,6 +82,9 @@ phases:
 
   build:
     commands:
+      - export REPO_NAME="${SITE_NAME}/drupal"
+      - export IMAGE_TAG="latest"
+      - export IMAGE_URI="$ECR_BASE_URL/$REPO_NAME:$IMAGE_TAG"
 
       - echo "Building Docker image with tag"
       - docker build -t "$REPO_NAME:$IMAGE_TAG" .
@@ -96,9 +99,7 @@ phases:
       - export DB_USER=$(jq -r '.db_username // ""' site-config.json)
       - export DB_PASSWORD=$(jq -r '.db_password // ""' site-config.json)
       - export INSTANCE_IP=$(jq -r '.public_ip // ""' site-config.json)
-      - export REPO_NAME="${SITE_NAME}/drupal"
-      - export IMAGE_TAG="latest"
-      - export IMAGE_URI="$ECR_BASE_URL/$REPO_NAME:$IMAGE_TAG"
+  
 
       # Debug extracted variables
       - echo "🔍 Debug extracted variables:"
