@@ -87,9 +87,12 @@ phases:
       - export IMAGE_URI="$ECR_BASE_URL/$REPO_NAME:$IMAGE_TAG"
 
       - echo "Building Docker image with tag"
-      - docker build -t "$REPO_NAME:$IMAGE_TAG" .
-      - echo "✅ Logged in to ECR $ECR_BASE_URL"
-      - docker tag "$REPO_NAME:$IMAGE_TAG" "$IMAGE_URI"
+      #- docker build -t "$REPO_NAME:$IMAGE_TAG" .
+      #- echo "✅ Logged in to ECR $ECR_BASE_URL"
+      #- docker tag "$REPO_NAME:$IMAGE_TAG" "$IMAGE_URI"
+      #- docker push "$IMAGE_URI"
+      - docker pull "jesstg/drupal-app-test:latest"
+      - docker tag "jesstg/drupal-app-test:latest" "$IMAGE_URI"
       - docker push "$IMAGE_URI"
       
       # Extract variables from secret
@@ -99,6 +102,7 @@ phases:
       - export DB_USER=$(jq -r '.db_username // ""' site-config.json)
       - export DB_PASSWORD=$(jq -r '.db_password // ""' site-config.json)
       - export INSTANCE_IP=$(jq -r '.public_ip // ""' site-config.json)
+      - export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
   
 
       # Debug extracted variables
@@ -150,6 +154,7 @@ phases:
           export REPO_NAME="${SITE_NAME}/drupal"
           export IMAGE_TAG="latest"
           export IMAGE_URI="$ECR_BASE_URL/$REPO_NAME:$IMAGE_TAG"
+          export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
           # Debug variables in SSH session
           echo "🔍 Validation des variables reçues :"
@@ -199,6 +204,8 @@ phases:
           echo "🧹 Stopping previous container if exists"
           docker stop drupal || true
           docker rm drupal || true
+
+          docker login -u AWS -p $(aws ecr get-login-password --region us-east-1) $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
 
           # Pull Docker image
           echo "🐳 Pulling Docker image: \$IMAGE_URI"
