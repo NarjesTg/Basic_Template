@@ -49,7 +49,6 @@ phases:
         }
         
       - echo "🔍 Récupération de la clé SSH"
-      - SECRET_PATH="ssh/${USER_ID}/${SITE_NAME}"
       - echo "📥 Lecture du secret depuis Secrets Manager"
       - |
         aws secretsmanager get-secret-value \
