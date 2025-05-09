@@ -85,7 +85,7 @@ phases:
     commands:
       - export REPO_NAME="${SITE_NAME}/drupal"
       - export IMAGE_TAG="latest"
-      - export IMAGE_URI="$ECR_BASE_URL/$REPO_NAME:$IMAGE_TAG"
+      - export IMAGE_URI="$ECR_BASE_URL/$REPO_NAME:dev"
 
       - echo "Building Docker image with tag"
       #- docker build -t "$REPO_NAME:$IMAGE_TAG" .
