@@ -5,8 +5,7 @@ env:
     SSH_USER: "ec2-user"  
 
 
-   
-    
+  
 
 phases:
   install:
