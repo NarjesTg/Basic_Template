@@ -3,8 +3,6 @@ version: 0.2
 env:
   variables:
     SSH_USER: "ec2-user"  
-
-
   
 
 phases:
@@ -37,7 +35,7 @@ phases:
           --output text > site-config.json; then
             echo "❌ ERREUR: Secret $SITE_SECRET_NAME introuvable!"
             aws secretsmanager list-secrets --region $AWS_REGION \
-              --query "SecretList[?contains(Name, 'sites/19')].{Name:Name,CreatedDate:CreatedDate}"
+              --query "SecretList[?contains(Name, 'sites/$USER_ID')].{Name:Name,CreatedDate:CreatedDate}"
             exit 1
         fi
         
@@ -84,16 +82,16 @@ phases:
     commands:
       - export REPO_NAME="${SITE_NAME}/drupal"
       - export IMAGE_TAG="latest"
-      - export IMAGE_URI="$ECR_BASE_URL/$REPO_NAME:dev"
+      - export IMAGE_URI="$ECR_BASE_URL/$REPO_NAME"
 
       - echo "Building Docker image with tag"
-      #- docker build -t "$REPO_NAME:$IMAGE_TAG" .
-      #- echo "✅ Logged in to ECR $ECR_BASE_URL"
-      #- docker tag "$REPO_NAME:$IMAGE_TAG" "$IMAGE_URI"
-      #- docker push "$IMAGE_URI"
-      - docker pull "jesstg/drupal-app-test:latest"
-      - docker tag "jesstg/drupal-app-test:latest" "$IMAGE_URI"
+      - docker build -t "$REPO_NAME:$IMAGE_TAG" .
+      - echo "✅ Logged in to ECR $ECR_BASE_URL"
+      - docker tag "$REPO_NAME:$IMAGE_TAG" "$IMAGE_URI"
       - docker push "$IMAGE_URI"
+      #- docker pull "jesstg/drupal-app-test:latest"
+      #- docker tag "jesstg/drupal-app-test:latest" "$IMAGE_URI"
+      #- docker push "$IMAGE_URI"
       
       # Extract variables from secret
       - echo "✅ Loading variables from site-config.json"
@@ -205,7 +203,7 @@ phases:
           docker stop drupal || true
           docker rm drupal || true
 
-          docker login -u AWS -p $(aws ecr get-login-password --region $AWS_REGION) $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+          docker login -u AWS -p $(aws ecr get-login-password --region us-east-2) $ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com
 
           # Pull Docker image
           echo "🐳 Pulling Docker image: \$IMAGE_URI"
